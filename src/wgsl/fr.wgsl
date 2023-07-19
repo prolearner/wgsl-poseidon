@@ -20,6 +20,12 @@ fn fr_get_p() -> BigInt256 {
     return p;
 }
 
+fn fr_get_roots() -> array<BigInt256> {
+    var p: array<BigInt256>;
+   
+    return p;
+}
+
 fn fr_get_mu() -> BigInt256 {
     var p: BigInt256;
     p.limbs[0] = 59685u;
@@ -130,6 +136,13 @@ fn fr_add(a: ptr<function, BigInt256>, b: ptr<function, BigInt256>) -> BigInt256
     var res: BigInt256;
     /*var res = bigint_add(a, b);*/
     bigint_add(a, b, &res);
+    return fr_reduce(&res);
+}
+
+fn fr_sub(a: ptr<function, BigInt256>, b: ptr<function, BigInt256>) -> BigInt256 { 
+    var res: BigInt256;
+    /*var res = bigint_add(a, b);*/
+    bigint_add(a, -b, &res);
     return fr_reduce(&res);
 }
 

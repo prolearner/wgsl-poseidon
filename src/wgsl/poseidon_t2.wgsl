@@ -1,51 +1,61 @@
 @compute
 @workgroup_size(64)
-fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    var a: BigInt256 = buf[global_id.x];
-    var state_0: BigInt256;
-    var state_1 = a;
+fn fft(@builtin(global_invocation_id) global_id: vec3<u32>) {
+    var i: u32 = global_id.x;
+    var p: BigInt256 = fr_get_p();
+    var n: u32 = 10u;
 
-    /*var n_rounds_f = 8u;*/
-    /*var n_rounds_p = 56u;*/
+    var roots: array<BigInt256, 10> = array<BigInt256, 10> (
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+    );
+    var values: array<BigInt256, 10> =  array<BigInt256, 10> (
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+        BigInt256(array<u32, 16>(59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u, 59685u,59685u,59685u,59685u,59685u,59685u,59685u,59685u)),
+    );
+    
 
-    var m_0_0 = constants[global_id.y + 128u];
-    var m_0_1 = constants[global_id.y + 129u];
-    var m_1_0 = constants[global_id.y + 130u];
-    var m_1_1 = constants[global_id.y + 131u];
-
-    // for t == 2, n_rounds_f + n_rounds_p = 64
-    for (var i = 0u; i < 64u; i ++) {
-        // Add round constants (also known as "arc" or "ark")
-        var c_0 = constants[global_id.y + i * 2u];
-        var c_1 = constants[global_id.y + i * 2u + 1u];
-        state_0 = fr_add(&state_0, &c_0);
-        state_1 = fr_add(&state_1, &c_1);
-
-        // S-Box
-        var s0 = state_0;
-        state_0 = fr_mul(&state_0, &state_0);
-        state_0 = fr_mul(&state_0, &state_0);
-        state_0 = fr_mul(&s0, &state_0);
-
-        if (i < 4u || i >= 60u) {
-            var s1 = state_1;
-            state_1 = fr_mul(&state_1, &state_1);
-            state_1 = fr_mul(&state_1, &state_1);
-            state_1 = fr_mul(&s1, &state_1);
+    for (var m = 1u; m < n; m *= 2u) {
+        if (i < m) {
+            var j = i + m;
+            var u = values[i];
+            var v = fr_mul(&values[j], &roots[n / (2u * m)]);
+            values[i] = fr_add(&u, &v);
+            values[j] = fr_sub(&u, &v);
+            values[i] = fr_mod(&values[i], &p);
+            values[j] = fr_mod(&values[j], &p);
         }
-
-        // Mix
-        var m00s0 = fr_mul(&m_0_0, &state_0);
-        var m01s1 = fr_mul(&m_0_1, &state_1);
-        var m10s0 = fr_mul(&m_1_0, &state_0);
-        var m11s1 = fr_mul(&m_1_1, &state_1);
-
-        var new_state_0: BigInt256 = fr_add(&m00s0, &m01s1);
-        var new_state_1: BigInt256 = fr_add(&m10s0, &m11s1);
-
-        state_0 = new_state_0;
-        state_1 = new_state_1;
     }
 
-    buf[global_id.x] = state_0;
+    buf[global_id.x] = values[bitreverse(i, n)];
+}
+
+@compute
+@workgroup_size(64)
+fn bitreverse(@builtin(global_invocation_id) global_id: vec3<u32>) -> u32 {
+    var i: u32 = global_id.x;
+    var r = 0u;
+    var n: u32 = 10u;
+    while (n > 0u) {
+        r = (r << 1u) | (i & 1u);
+        i = i >> 1u;
+        n = n >> 1u;
+    }
+    return r;
 }
