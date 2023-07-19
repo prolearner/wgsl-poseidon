@@ -1,6 +1,7 @@
 use num_bigint::BigUint;
 use num_traits::identities::Zero;
 use itertools::Itertools;
+use rustfft::num_complex::Complex;
 
 pub fn split_u32(a: u32) -> [u32; 2] {
     let a_0 = (a & 0xffff0000) >> 16;
@@ -71,3 +72,15 @@ pub fn u32s_to_bigints(b: Vec<u32>) -> Vec<BigUint> {
 
     chunks.iter().map(|c| limbs_to_bigint256(c)).collect()
 }
+
+pub fn complex_to_bytes(c: Complex<f32>) -> [u8; 8] {
+    let mut bytes = [0u8; 8];
+    bytes[0..4].copy_from_slice(&c.re.to_bits().to_le_bytes());
+    bytes[4..8].copy_from_slice(&c.im.to_bits().to_le_bytes());
+    bytes
+}
+
+pub fn complex_vec_to_bytes(vec: Vec<Complex<f32>>) -> Vec<u8> {
+    vec.iter().flat_map(|&c| complex_to_bytes(c).to_vec()).collect()
+}
+

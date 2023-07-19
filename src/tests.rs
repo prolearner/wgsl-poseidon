@@ -6,6 +6,46 @@ use crate::gpu::single_buffer_compute;
 use crate::wgsl::concat_files;
 use crate::utils::{ bigints_to_bytes, u32s_to_bigints };
 
+use rustfft::{FftPlanner, num_complex::Complex};
+
+
+
+#[test]
+pub fn test_rustfft() {
+    let num_inputs = 25600;
+    let mut inputs = vec![Complex{ re: 0.0f32, im: 0.0f32 }; num_inputs];
+
+    // Calculate FFT on the CPU
+    let sw = Stopwatch::start_new();
+    let mut planner = FftPlanner::new();
+    let fft = planner.plan_fft_forward(num_inputs);
+    fft.process(&mut inputs);
+    println!("CPU took {}ms", sw.elapsed_ms());
+
+    // Now, `inputs` contains the FFT result
+    for i in 0..10 {
+        println!("FFT output [{}]: {:?}", i, inputs[i]);
+    }
+
+    // // Convert inputs to bytes
+    // let input_to_gpu = complex_vec_to_bytes(inputs);
+
+    // // Send to the GPU
+    // let wgsl = concat_files(vec![
+    //     "src/wgsl/fft.wgsl",
+    // ]);
+
+    // let sw = Stopwatch::start_new();
+    // let result = pollster::block_on(single_buffer_compute(&wgsl, &input_to_gpu, num_inputs)).unwrap();
+    // println!("GPU took {}ms", sw.elapsed_ms());
+
+    // let result = bytes_to_complex(result);
+
+    // for i in 0..num_inputs {
+    //     assert_eq!(result[i], expected[i]);
+    // }
+}
+
 #[test]
 pub fn test_pow_5() {
     // The BN254 scalar field modulus
